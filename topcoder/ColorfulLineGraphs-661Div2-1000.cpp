@@ -10,8 +10,8 @@ public:
 		auto dp = vector<ll>(N + 1);
 		dp[1] = K;
 		for (int i = 2; i <= N; ++i) {
-			ll edgeCombinations = (K - 1) * (i - 1);
-			dp[i] = (((dp[i - 1] * K) % MOD) + // just add an additional node (which can be one of j colours) with no additional edge
+			ll edgeCombinations = (K - 1) * (i - 1); // single outgoing edge: i - 1 nodes which must use K - 1 colours (Kth being node i)
+			dp[i] = (((dp[i - 1] * K) % MOD) + // just add an additional node (which can be one of K colours) with no additional edge
 				((dp[i - 1] * edgeCombinations) % MOD)) % MOD; // all possible edge combinations from that node
 		}
 		
