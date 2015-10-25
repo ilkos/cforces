@@ -45,7 +45,7 @@ int main() {
     int nCases;
     cin >> nCases;
     while (nCases-- > 0) {
-        int n, m;
+        int64_t n, m;
         cin >> n >> m;
         vector<int64_t> values(n);
         for (int i = 0; i < n; ++i) cin >> values[i];
