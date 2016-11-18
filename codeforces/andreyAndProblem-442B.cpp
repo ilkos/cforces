@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
+#include <algorithm>
 
 using namespace std;
 
@@ -22,19 +23,39 @@ private:
 };
 
 // never add another probability in the mix unless it results in a better result.
-double calc(const vector<double>& pList, const CondProbability current, const int index) {
-	if (index >= pList.size()) {
-		return current.getProbability();
+// assume that the probability of getting 1 problem by asking x is better than the one for x and y:
+// Px > P(x + y)
+// Translated to Px > Px * (1 - Py) + (1 - Px) * Py
+// Let's try to add Pz in the mix (mult by (1 - Pz)):
+// Px * (1 - Pz) > Px * (1 - Py) * (1 - Pz) + (1 - Px) * Py * (1 - Pz)
+// add (1 - Px) * Pz:
+// Px * (1 - Pz) + (1 - Px) * Pz > Px * (1 - Py) * (1 - Pz) + (1 - Px) * Py * (1 - Pz) + (1 - Px) * Pz
+// All terms are positive, and (1 - Py) <= 1, so (1 - Px) * Pz >= (1 - Px) * (1 - Py) * Pz
+// Therefore:
+// Px * (1 - Pz) + (1 - Px) * Pz > Px * (1 - Py) * (1 - Pz) + (1 - Px) * Py * (1 - Pz) + (1 - Px) * (1 - Py) * Pz
+// P(x + z) > P(x + y + z)
+// Therefore it is always redundant to add a term that does not benefit us.
+double calc(const vector<double>& pList, vector<bool>& consumed, const CondProbability current) {
+	int best = -1;
+	double bestResult = current.getProbability();
+
+	for (int i = 0; i < pList.size(); ++i) {
+		if (consumed[i]) continue;
+		consumed[i] = true;
+		CondProbability with = current.addConditional(pList[i]);
+		if (with.getProbability() > bestResult) {
+			bestResult = with.getProbability();
+			best = i;
+		}
+		consumed[i] = false;
 	}
 
-	double result = calc(pList, current, index + 1); // skip current
-
-	CondProbability with = current.addConditional(pList[index]);
-	if (with.getProbability() > current.getProbability()) {
-		result = max(result, calc(pList, with, index + 1));
+	if (best < 0) {
+		return bestResult;
+	} else {
+		consumed[best] = true;
+		return calc(pList, consumed, current.addConditional(pList[best]));
 	}
-
-	return result;
 }
 
 int main() {
@@ -44,6 +65,6 @@ int main() {
 	for (int i = 0; i < n; ++i) {
 		cin >> prob[i];
 	}
-
-	cout << setprecision(12) << calc(prob, CondProbability(), 0) << endl;
+	vector<bool> consumed(n);
+	cout << setprecision(12) << calc(prob, consumed, CondProbability()) << endl;
 }
