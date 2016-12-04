@@ -1,46 +1,41 @@
 #include <iostream>
-#include <map>
 #include <vector>
 using namespace std;
 
-// this is n^3
-// do n^2 by only using nlines and nbugs (how to count distinct using all developers?)
-vector<map<pair<int, int>, int>> memo;
+// Returns distinct number of ways you can write nLines with a quota of nBugs
 int solve(const vector<int>& bugsPerLine,
 	const int modulo,
 	const int nLines,
-	const int nBugs,
-	const int pIdx) {
-  if (nBugs < 0) { // out of bug quota
-  	return 0;
-  }
-  if (nLines == 0) {
-  	return 1;
-  }
-  if (pIdx == bugsPerLine.size() || nBugs == 0) {
-  	return 0;
-  }
+	const int nBugs) {
+	// dp[i][j] denotes the number of ways that you can write i lines with *exactly* j bugs
+	vector<vector<int>> dp(nLines + 1, vector<int>(nBugs + 1, 0));
+	dp[0][0] = 1;
 
-  map<pair<int, int>, int>::const_iterator iter =
-      memo[pIdx].find(make_pair(nLines, nBugs));
-  if (iter != memo[pIdx].end()) {
-  	return iter->second;
-  }
+	for (int pBugs : bugsPerLine) { // introduce programmer with pBugs
+		for (int i = 1; i <= nLines; ++i) {
+			for (int j = pBugs; j <= nBugs; ++j) {
+				dp[i][j] += dp[i - 1][j - pBugs];
+				dp[i][j] %= modulo;
+			}
+		}
+	}
 
-  return memo[pIdx][make_pair(nLines, nBugs)] =
-      (solve(bugsPerLine, modulo, nLines - 1, nBugs - bugsPerLine[pIdx], pIdx)
-      	+ solve(bugsPerLine, modulo, nLines, nBugs, pIdx + 1)) % modulo;
+	int acc = 0;
+	for (int i = 0; i <= nBugs; ++i) {
+		acc += dp[nLines][i];
+		acc %= modulo;
+	}
+	return acc;
 }
 
 int main() {
 	int nProgrammers, nLines, nBugs, modulo;
 	cin >> nProgrammers >> nLines >> nBugs >> modulo;
 
-	memo = vector<map<pair<int, int>, int>>(nProgrammers);
 	vector<int> bugsPerLine(nProgrammers);
 	for (int i = 0; i < nProgrammers; ++i) {
 		cin >> bugsPerLine[i];
 	}
 
-	cout << solve(bugsPerLine, modulo, nLines, nBugs, 0) << endl;
+	cout << solve(bugsPerLine, modulo, nLines, nBugs) << endl;
 }
