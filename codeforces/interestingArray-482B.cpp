@@ -121,43 +121,43 @@ private:
 
 bool solve(const vector<Limit>& limits, vector<int>& elements) {
   OrSegmentTree segmentTree(elements.size());
-	for (auto limit : limits) {
-		segmentTree.orRange(limit, limit.value);
-	}
+  for (auto limit : limits) {
+    segmentTree.orRange(limit, limit.value);
+  }
 
   for (int i = 0; i < elements.size(); ++i) {
     elements[i] = segmentTree.getElementAt(i);
   }
 
-	// verify validity
+  // verify validity
   RangeAndTree andTree(elements);
-	for (auto limit : limits) {
-		if (andTree.andRange(limit) != limit.value) return false;
-	}
+  for (auto limit : limits) {
+    if (andTree.andRange(limit) != limit.value) return false;
+  }
 
-	return true;
+  return true;
 }
 
 int main() {
-	int nElements, nLimits;
-	cin >> nElements >> nLimits;
+  int nElements, nLimits;
+  cin >> nElements >> nLimits;
 
-	vector<Limit> limits(nLimits);
-	for (int i = 0; i < nLimits; ++i) {
-		cin >> limits[i].l >> limits[i].r >> limits[i].value;
-		--limits[i].l;
-		--limits[i].r;
-	}
+  vector<Limit> limits(nLimits);
+  for (int i = 0; i < nLimits; ++i) {
+    cin >> limits[i].l >> limits[i].r >> limits[i].value;
+    --limits[i].l;
+    --limits[i].r;
+  }
 
   vector<int> resultingElements(nElements);
-	bool result = solve(limits, resultingElements);
-	if (result) {
-		cout << "YES" << endl;
-		for (int i = 0; i < nElements; ++i) {
-			cout << resultingElements[i] << " ";
-		}
-		cout << endl;
-	} else {
-		cout << "NO" << endl;
-	}
+  bool result = solve(limits, resultingElements);
+  if (result) {
+    cout << "YES" << endl;
+    for (int i = 0; i < nElements; ++i) {
+      cout << resultingElements[i] << " ";
+    }
+    cout << endl;
+  } else {
+    cout << "NO" << endl;
+  }
 }
