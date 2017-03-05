@@ -27,6 +27,12 @@ int solve(vector<int>& nums) {
   // M is the max value seen
   int M = nums[nums.size() - 1];
 
+  // precompute results for all values
+  vector<int> lower_eq(2 * M + 1);
+  for (int i = 1; i <= 2 * M; ++i) {
+    lower_eq[i] = searchLeBetweenIdx(0, nums.size() - 1, i, nums);
+  }
+
   int result = 0;
   for (int i = 0; i < nums.size(); ++i) { // O(n)
     // the mod sequence of nums[i] mod nums[i] + 1 .. nums[i] + n
@@ -34,8 +40,7 @@ int solve(vector<int>& nums) {
     // In nums, binary search for the maximum value between
     // nums[i] + 1 .. 2 * nums[i] - 1
     for (int k = 2; k * nums[i] <= 2 * M; ++k) {
-      int num = searchLeBetweenIdx(i + 1, nums.size() - 1, k * nums[i] - 1, nums);
-      result = max(result, num % nums[i]);
+      result = max(result, lower_eq[k * nums[i] - 1] % nums[i]);
     }
   }
 
